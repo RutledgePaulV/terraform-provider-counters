@@ -49,14 +49,8 @@ func monotonicResource() *schema.Resource {
 func createCounter(context context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	diagnostics := make(diag.Diagnostics, 0)
 	data.SetId(uuid.New().String())
-	start, _ := data.GetOk("initial_value")
-	err := data.Set("value", start)
-	if err != nil {
-		diagnostics = append(diagnostics, diag.Diagnostic{
-			Severity: diag.Error,
-			Summary:  "Encountered error initializing value.",
-		})
-	}
+	start := data.Get("initial_value")
+	data.Set("value", start)
 	return diagnostics
 }
 
@@ -70,13 +64,7 @@ func updateCounter(context context.Context, data *schema.ResourceData, meta inte
 	if data.HasChanges("triggers") {
 		value := data.Get("value").(int)
 		step := data.Get("step").(int)
-		err := data.Set("value", value+step)
-		if err != nil {
-			diagnostics = append(diagnostics, diag.Diagnostic{
-				Severity: diag.Error,
-				Summary:  "Encountered error updating value.",
-			})
-		}
+		data.Set("value", value+step)
 	}
 	return diagnostics
 }

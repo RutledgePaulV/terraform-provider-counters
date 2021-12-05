@@ -4,13 +4,13 @@ A terraform provider for generating sequential values based on generic triggers.
 
 ## Provider
 
-This provider is available from the [Terraform Registry](https://registry.terraform.io/browse/providers).
+This provider is available from the [Terraform Registry](https://registry.terraform.io/providers/RutledgePaulV/counters/latest/docs).
 
 ```terraform 
 terraform {
     required_providers = {
         counters = {
-            source = "rutledgepaulv/counters"
+            source = "RutledgePaulV/counters"
         }
     }
 }

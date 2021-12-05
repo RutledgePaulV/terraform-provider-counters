@@ -2,8 +2,8 @@ package counters
 
 import (
 	"context"
-	"github.com/hashicorp/terraform-plugin-sdk/diag"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func semanticVersionResource() *schema.Resource {
@@ -37,32 +37,38 @@ func semanticVersionResource() *schema.Resource {
 				Type:        schema.TypeInt,
 				Default:     0,
 				Computed:    false,
+				Optional:    true,
 				Description: "The initial major version value.",
 			},
 			"start_minor": {
 				Type:        schema.TypeInt,
 				Default:     0,
 				Computed:    false,
+				Optional:    true,
 				Description: "The initial minor version value.",
 			},
 			"start_patch": {
 				Type:        schema.TypeInt,
 				Default:     0,
 				Computed:    false,
+				Optional:    true,
 				Description: "The initial patch version value.",
 			},
 			"triggers_major": {
 				Type:        schema.TypeMap,
+				Optional:    true,
 				Default:     map[string]string{},
 				Description: "A map of strings that will cause the major version number to increment when any of the values change.",
 			},
 			"triggers_minor": {
 				Type:        schema.TypeMap,
+				Optional:    true,
 				Default:     map[string]string{},
 				Description: "A map of strings that will cause the minor version number to increment when any of the values change.",
 			},
 			"triggers_patch": {
 				Type:        schema.TypeMap,
+				Optional:    true,
 				Default:     map[string]string{},
 				Description: "A map of strings that will cause the patch version number to increment when any of the values change.",
 			},

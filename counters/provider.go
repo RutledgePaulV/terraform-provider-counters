@@ -18,5 +18,5 @@ func Provider() *schema.Provider {
 }
 
 func providerConfigure(context.Context, *schema.ResourceData) (interface{}, diag.Diagnostics) {
-	return nil, nil
+	return nil, make(diag.Diagnostics, 0)
 }

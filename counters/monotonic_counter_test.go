@@ -31,11 +31,28 @@ func testCheckDestroy(state *terraform.State) error {
 	return nil
 }
 
-func terraformSource() string {
+func step1() string {
 	return `
 		provider counters {
 		}
 		resource counters_monotonic_counter this {
+			initial_value = 35
+			triggers = {
+				hash = "potatoes"
+			}
+		}
+	`
+}
+
+func step2() string {
+	return `
+		provider counters {
+		}
+		resource counters_monotonic_counter this {
+			initial_value = 35
+			triggers = {
+				hash = "eggs"
+			}
 		}
 	`
 }
@@ -47,9 +64,15 @@ func TestAccItem_Basic(t *testing.T) {
 		CheckDestroy:      testCheckDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: terraformSource(),
+				Config: step1(),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("counters_monotonic_counter.this", "value", "0"),
+					resource.TestCheckResourceAttr("counters_monotonic_counter.this", "value", "35"),
+				),
+			},
+			{
+				Config: step2(),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("counters_monotonic_counter.this", "value", "36"),
 				),
 			},
 		},

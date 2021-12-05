@@ -7,12 +7,13 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-func monotonicCounterResource() *schema.Resource {
+func monotonicResource() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: createCounter,
 		ReadContext:   readCounter,
 		UpdateContext: updateCounter,
 		DeleteContext: deleteCounter,
+		Description:   "A monotonic counter which increments according to the configured triggers.",
 		Schema: map[string]*schema.Schema{
 			"value": {
 				Type:        schema.TypeInt,

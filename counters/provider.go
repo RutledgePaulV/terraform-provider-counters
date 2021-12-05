@@ -9,8 +9,8 @@ import (
 func Provider() *schema.Provider {
 	return &schema.Provider{
 		ResourcesMap: map[string]*schema.Resource{
-			"counters_semantic_version":  semanticVersionResource(),
-			"counters_monotonic_counter": monotonicCounterResource(),
+			"counters_monotonic":        monotonicResource(),
+			"counters_semantic_version": semanticVersionResource(),
 		},
 		DataSourcesMap:       map[string]*schema.Resource{},
 		ConfigureContextFunc: providerConfigure,

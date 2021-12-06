@@ -17,7 +17,6 @@ A semantic version number whose components increment according to the configured
 
 ### Optional
 
-- **id** (String) The ID of this resource.
 - **major_initial_value** (Number) The initial major version value.
 - **major_triggers** (Map of String) A map of strings that will cause the major version number to increment when any of the values change.
 - **minor_initial_value** (Number) The initial minor version value.
@@ -27,6 +26,7 @@ A semantic version number whose components increment according to the configured
 
 ### Read-Only
 
+- **id** (String) The ID of this resource.
 - **major_value** (Number) The current major version number.
 - **minor_value** (Number) The current minor version number.
 - **patch_value** (Number) The current patch version number.

@@ -14,6 +14,7 @@ func semanticVersionResource() *schema.Resource {
 		ReadContext:   readSemanticVersion,
 		UpdateContext: updateSemanticVersion,
 		DeleteContext: deleteSemanticVersion,
+		CustomizeDiff: customDiff,
 		Description:   "A semantic version number whose components increment according to the configured triggers.",
 		Schema: map[string]*schema.Schema{
 			"major_value": {
@@ -82,6 +83,38 @@ func semanticVersionResource() *schema.Resource {
 	}
 }
 
+func customDiff(context context.Context, diff *schema.ResourceDiff, something interface{}) error {
+
+	if diff.HasChange("major_triggers") {
+		newMajor := diff.Get("major_value").(int) + 1
+		diff.SetNew("major_value", newMajor)
+		diff.SetNew("minor_value", 0)
+		diff.SetNew("patch_value", 0)
+		diff.SetNew("value", fmt.Sprintf("%d.%d.%d", newMajor, 0, 0))
+		return nil
+	}
+
+	if diff.HasChange("minor_triggers") {
+		curMajor := diff.Get("major_value").(int)
+		newMinor := diff.Get("minor_value").(int) + 1
+		diff.SetNew("minor_value", newMinor)
+		diff.SetNew("patch_value", 0)
+		diff.SetNew("value", fmt.Sprintf("%d.%d.%d", curMajor, newMinor, 0))
+		return nil
+	}
+
+	if diff.HasChange("patch_triggers") {
+		curMajor := diff.Get("major_value").(int)
+		curMinor := diff.Get("minor_value").(int)
+		newPatch := diff.Get("patch_value").(int) + 1
+		diff.SetNew("patch_value", newPatch)
+		diff.SetNew("value", fmt.Sprintf("%d.%d.%d", curMajor, curMinor, newPatch))
+		return nil
+	}
+
+	return nil
+}
+
 func createSemanticVersion(context context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	diagnostics := make(diag.Diagnostics, 0)
 	data.SetId(uuid.New().String())
@@ -102,34 +135,6 @@ func readSemanticVersion(context context.Context, data *schema.ResourceData, met
 
 func updateSemanticVersion(context context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	diagnostics := make(diag.Diagnostics, 0)
-	if data.HasChanges("patch_triggers") {
-		value := data.Get("patch_value").(int)
-		data.Set("patch_value", value+1)
-	}
-
-	if data.HasChanges("minor_triggers") {
-		value := data.Get("minor_value").(int)
-		data.Set("minor_value", value+1)
-		data.Set("patch_value", 0)
-	}
-
-	if data.HasChanges("major_triggers") {
-		value := data.Get("major_value").(int)
-		data.Set("major_value", value+1)
-		data.Set("minor_value", 0)
-		data.Set("patch_value", 0)
-	}
-
-	major := data.Get("major_value").(int)
-	minor := data.Get("minor_value").(int)
-	patch := data.Get("patch_value").(int)
-
-	newVersion := fmt.Sprintf("%d.%d.%d", major, minor, patch)
-
-	if newVersion != data.Get("value") {
-		data.Set("value", newVersion)
-	}
-
 	return diagnostics
 }
 

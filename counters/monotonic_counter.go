@@ -13,6 +13,7 @@ func monotonicResource() *schema.Resource {
 		ReadContext:   readCounter,
 		UpdateContext: updateCounter,
 		DeleteContext: deleteCounter,
+		CustomizeDiff: customMonotonicDiff,
 		Description:   "A monotonic counter which increments according to the configured triggers.",
 		Schema: map[string]*schema.Schema{
 			"value": {
@@ -46,6 +47,15 @@ func monotonicResource() *schema.Resource {
 	}
 }
 
+func customMonotonicDiff(context context.Context, diff *schema.ResourceDiff, something interface{}) error {
+	if diff.HasChange("triggers") {
+		step := diff.Get("step").(int)
+		newValue := diff.Get("value").(int) + step
+		diff.SetNew("value", newValue)
+	}
+	return nil
+}
+
 func createCounter(context context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	diagnostics := make(diag.Diagnostics, 0)
 	data.SetId(uuid.New().String())
@@ -61,11 +71,6 @@ func readCounter(context context.Context, data *schema.ResourceData, meta interf
 
 func updateCounter(context context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	diagnostics := make(diag.Diagnostics, 0)
-	if data.HasChanges("triggers") {
-		value := data.Get("value").(int)
-		step := data.Get("step").(int)
-		data.Set("value", value+step)
-	}
 	return diagnostics
 }
 

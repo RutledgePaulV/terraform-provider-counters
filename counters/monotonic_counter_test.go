@@ -50,12 +50,15 @@ func TestAccItem_Basic(t *testing.T) {
 				Config: step1(),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("counters_monotonic.this", "value", "35"),
+					resource.TestCheckResourceAttr("counters_monotonic.this", "history.0", "35"),
 				),
 			},
 			{
 				Config: step2(),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("counters_monotonic.this", "value", "36"),
+					resource.TestCheckResourceAttr("counters_monotonic.this", "history.0", "35"),
+					resource.TestCheckResourceAttr("counters_monotonic.this", "history.1", "36"),
 				),
 			},
 		},

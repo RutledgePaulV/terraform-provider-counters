@@ -63,18 +63,24 @@ func TestAccItem_Semantic(t *testing.T) {
 				Config: step1Semantic(),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("counters_semantic_version.this", "value", "1.0.0"),
+					resource.TestCheckResourceAttr("counters_semantic_version.this", "history.0", "1.0.0"),
 				),
 			},
 			{
 				Config: step2Semantic(),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("counters_semantic_version.this", "value", "1.0.1"),
+					resource.TestCheckResourceAttr("counters_semantic_version.this", "history.0", "1.0.0"),
+					resource.TestCheckResourceAttr("counters_semantic_version.this", "history.1", "1.0.1"),
 				),
 			},
 			{
 				Config: step3Semantic(),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("counters_semantic_version.this", "value", "1.1.0"),
+					resource.TestCheckResourceAttr("counters_semantic_version.this", "history.0", "1.0.0"),
+					resource.TestCheckResourceAttr("counters_semantic_version.this", "history.1", "1.0.1"),
+					resource.TestCheckResourceAttr("counters_semantic_version.this", "history.2", "1.1.0"),
 				),
 			},
 		},

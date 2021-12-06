@@ -29,6 +29,14 @@ func monotonicResource() *schema.Resource {
 				ForceNew:    true,
 				Description: "The amount used to increment / decrement the counter on each revision.",
 			},
+			"history": {
+				Type: schema.TypeList,
+				Elem: &schema.Schema{
+					Type: schema.TypeInt,
+				},
+				Computed:    true,
+				Description: "A list of counter values that this resource has produced.",
+			},
 			"initial_value": {
 				Type:        schema.TypeInt,
 				Default:     0,
@@ -51,7 +59,9 @@ func customMonotonicDiff(context context.Context, diff *schema.ResourceDiff, som
 	if diff.HasChange("triggers") {
 		step := diff.Get("step").(int)
 		newValue := diff.Get("value").(int) + step
+		curHistory := diff.Get("history").([]interface{})
 		diff.SetNew("value", newValue)
+		diff.SetNew("history", append(curHistory, newValue))
 	}
 	return nil
 }
@@ -61,6 +71,7 @@ func createCounter(context context.Context, data *schema.ResourceData, meta inte
 	data.SetId(uuid.New().String())
 	start := data.Get("initial_value")
 	data.Set("value", start)
+	data.Set("history", []interface{}{start})
 	return diagnostics
 }
 

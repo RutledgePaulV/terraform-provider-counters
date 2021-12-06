@@ -37,6 +37,14 @@ func semanticVersionResource() *schema.Resource {
 				Computed:    true,
 				Description: "The semantic version number as a string in <major>.<minor>.<patch> form.",
 			},
+			"history": {
+				Type: schema.TypeList,
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
+				Computed:    true,
+				Description: "A list of semantic versions that this resource has produced.",
+			},
 			"major_initial_value": {
 				Type:        schema.TypeInt,
 				Default:     1,
@@ -65,18 +73,21 @@ func semanticVersionResource() *schema.Resource {
 				Type:        schema.TypeMap,
 				Optional:    true,
 				Default:     map[string]string{},
+				Elem:        schema.TypeString,
 				Description: "A map of strings that will cause the major version number to increment when any of the values change.",
 			},
 			"minor_triggers": {
 				Type:        schema.TypeMap,
 				Optional:    true,
 				Default:     map[string]string{},
+				Elem:        schema.TypeString,
 				Description: "A map of strings that will cause the minor version number to increment when any of the values change.",
 			},
 			"patch_triggers": {
 				Type:        schema.TypeMap,
 				Optional:    true,
 				Default:     map[string]string{},
+				Elem:        schema.TypeString,
 				Description: "A map of strings that will cause the patch version number to increment when any of the values change.",
 			},
 		},
@@ -90,7 +101,10 @@ func customDiff(context context.Context, diff *schema.ResourceDiff, something in
 		diff.SetNew("major_value", newMajor)
 		diff.SetNew("minor_value", 0)
 		diff.SetNew("patch_value", 0)
-		diff.SetNew("value", fmt.Sprintf("%d.%d.%d", newMajor, 0, 0))
+		newVersion := fmt.Sprintf("%d.%d.%d", newMajor, 0, 0)
+		curHistory := diff.Get("history").([]interface{})
+		diff.SetNew("value", newVersion)
+		diff.SetNew("history", append(curHistory, newVersion))
 		return nil
 	}
 
@@ -99,7 +113,10 @@ func customDiff(context context.Context, diff *schema.ResourceDiff, something in
 		newMinor := diff.Get("minor_value").(int) + 1
 		diff.SetNew("minor_value", newMinor)
 		diff.SetNew("patch_value", 0)
-		diff.SetNew("value", fmt.Sprintf("%d.%d.%d", curMajor, newMinor, 0))
+		newVersion := fmt.Sprintf("%d.%d.%d", curMajor, newMinor, 0)
+		curHistory := diff.Get("history").([]interface{})
+		diff.SetNew("value", newVersion)
+		diff.SetNew("history", append(curHistory, newVersion))
 		return nil
 	}
 
@@ -108,7 +125,10 @@ func customDiff(context context.Context, diff *schema.ResourceDiff, something in
 		curMinor := diff.Get("minor_value").(int)
 		newPatch := diff.Get("patch_value").(int) + 1
 		diff.SetNew("patch_value", newPatch)
-		diff.SetNew("value", fmt.Sprintf("%d.%d.%d", curMajor, curMinor, newPatch))
+		newVersion := fmt.Sprintf("%d.%d.%d", curMajor, curMinor, newPatch)
+		curHistory := diff.Get("history").([]interface{})
+		diff.SetNew("value", newVersion)
+		diff.SetNew("history", append(curHistory, newVersion))
 		return nil
 	}
 
@@ -124,7 +144,9 @@ func createSemanticVersion(context context.Context, data *schema.ResourceData, m
 	data.Set("minor_value", minor)
 	patch := data.Get("patch_initial_value").(int)
 	data.Set("patch_value", patch)
-	data.Set("value", fmt.Sprintf("%d.%d.%d", major, minor, patch))
+	version := fmt.Sprintf("%d.%d.%d", major, minor, patch)
+	data.Set("value", version)
+	data.Set("history", []interface{}{version})
 	return diagnostics
 }
 

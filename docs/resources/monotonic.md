@@ -17,7 +17,6 @@ A monotonic counter which increments according to the configured triggers.
 
 ### Optional
 
-- **capture_history** (Boolean) Should this resource instance capture the history of the trigger values over time?
 - **id** (String) The ID of this resource.
 - **initial_value** (Number) The initial value to use for the counter.
 - **max_history** (Number) How many versions (max) should this resource store?

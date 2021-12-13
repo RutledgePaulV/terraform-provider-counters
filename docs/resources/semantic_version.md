@@ -17,7 +17,6 @@ A semantic version number whose components increment according to the configured
 
 ### Optional
 
-- **capture_history** (Boolean) Should this resource instance capture the history of the trigger values over time?
 - **id** (String) The ID of this resource.
 - **major_initial_value** (Number) The initial major version value.
 - **major_triggers** (Map of String) A map of strings that will cause the major version number to increment when any of the values change.

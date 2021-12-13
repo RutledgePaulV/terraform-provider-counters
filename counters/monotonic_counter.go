@@ -27,13 +27,6 @@ func monotonicResource() *schema.Resource {
 				ForceNew:    true,
 				Description: "The amount used to increment / decrement the counter on each revision.",
 			},
-			"capture_history": {
-				Type:        schema.TypeBool,
-				Optional:    true,
-				Default:     true,
-				ForceNew:    true,
-				Description: "Should this resource instance capture the history of the trigger values over time?",
-			},
 			"max_history": {
 				Type:        schema.TypeInt,
 				Optional:    true,
@@ -87,28 +80,20 @@ func customMonotonicDiff(context context.Context, diff *schema.ResourceDiff, som
 		start := diff.Get("initial_value")
 		diff.SetNew("value", start)
 
-		if diff.Get("capture_history") == true {
-			diff.SetNew("history", []map[string]interface{}{
-				{
-					"value":    start,
-					"triggers": diff.Get("triggers"),
-				},
-			})
-		} else {
-			diff.SetNew("history", []map[string]interface{}{})
-		}
+		diff.SetNew("history", appendAndTruncate([]interface{}{}, map[string]interface{}{
+			"value":    start,
+			"triggers": diff.Get("triggers"),
+		}, diff.Get("max_history").(int)))
 
 	} else if diff.HasChange("triggers") {
 		step := diff.Get("step").(int)
 		newValue := diff.Get("value").(int) + step
 		curHistory := diff.Get("history").([]interface{})
 		diff.SetNew("value", newValue)
-		if diff.Get("capture_history") == true {
-			diff.SetNew("history", appendAndTruncate(curHistory, map[string]interface{}{
-				"value":    newValue,
-				"triggers": diff.Get("triggers"),
-			}, diff.Get("max_history").(int)))
-		}
+		diff.SetNew("history", appendAndTruncate(curHistory, map[string]interface{}{
+			"value":    newValue,
+			"triggers": diff.Get("triggers"),
+		}, diff.Get("max_history").(int)))
 	}
 
 	return nil

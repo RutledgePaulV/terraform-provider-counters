@@ -35,13 +35,6 @@ func semanticVersionResource() *schema.Resource {
 				Computed:    true,
 				Description: "The semantic version number as a string in <major>.<minor>.<patch> form.",
 			},
-			"capture_history": {
-				Type:        schema.TypeBool,
-				Optional:    true,
-				Default:     true,
-				ForceNew:    true,
-				Description: "Should this resource instance capture the history of the trigger values over time?",
-			},
 			"max_history": {
 				Type:        schema.TypeInt,
 				Optional:    true,
@@ -163,21 +156,15 @@ func semanticVersionDiff(context context.Context, diff *schema.ResourceDiff, som
 		version := fmt.Sprintf("%d.%d.%d", major, minor, patch)
 		diff.SetNew("value", version)
 
-		if diff.Get("capture_history") == true {
-			diff.SetNew("history", []map[string]interface{}{
-				{
-					"value":          diff.Get("value"),
-					"major_value":    diff.Get("major_value").(int),
-					"minor_value":    diff.Get("minor_value").(int),
-					"patch_value":    diff.Get("patch_value").(int),
-					"major_triggers": major_triggers,
-					"minor_triggers": minor_triggers,
-					"patch_triggers": patch_triggers,
-				},
-			})
-		} else {
-			diff.SetNew("history", []map[string]interface{}{})
-		}
+		diff.SetNew("history", appendAndTruncate([]interface{}{}, map[string]interface{}{
+			"value":          diff.Get("value"),
+			"major_value":    diff.Get("major_value").(int),
+			"minor_value":    diff.Get("minor_value").(int),
+			"patch_value":    diff.Get("patch_value").(int),
+			"major_triggers": major_triggers,
+			"minor_triggers": minor_triggers,
+			"patch_triggers": patch_triggers,
+		}, diff.Get("max_history").(int)))
 
 		return nil
 	}
@@ -190,18 +177,16 @@ func semanticVersionDiff(context context.Context, diff *schema.ResourceDiff, som
 		newVersion := fmt.Sprintf("%d.%d.%d", newMajor, 0, 0)
 		diff.SetNew("value", newVersion)
 
-		if diff.Get("capture_history") == true {
-			curHistory := diff.Get("history").([]interface{})
-			diff.SetNew("history", appendAndTruncate(curHistory, map[string]interface{}{
-				"value":          diff.Get("value"),
-				"major_value":    diff.Get("major_value").(int),
-				"minor_value":    diff.Get("minor_value").(int),
-				"patch_value":    diff.Get("patch_value").(int),
-				"major_triggers": major_triggers,
-				"minor_triggers": minor_triggers,
-				"patch_triggers": patch_triggers,
-			}, diff.Get("max_history").(int)))
-		}
+		curHistory := diff.Get("history").([]interface{})
+		diff.SetNew("history", appendAndTruncate(curHistory, map[string]interface{}{
+			"value":          diff.Get("value"),
+			"major_value":    diff.Get("major_value").(int),
+			"minor_value":    diff.Get("minor_value").(int),
+			"patch_value":    diff.Get("patch_value").(int),
+			"major_triggers": major_triggers,
+			"minor_triggers": minor_triggers,
+			"patch_triggers": patch_triggers,
+		}, diff.Get("max_history").(int)))
 
 	} else if diff.HasChange("minor_triggers") {
 		curMajor := diff.Get("major_value").(int)
@@ -211,18 +196,16 @@ func semanticVersionDiff(context context.Context, diff *schema.ResourceDiff, som
 		newVersion := fmt.Sprintf("%d.%d.%d", curMajor, newMinor, 0)
 		diff.SetNew("value", newVersion)
 
-		if diff.Get("capture_history") == true {
-			curHistory := diff.Get("history").([]interface{})
-			diff.SetNew("history", appendAndTruncate(curHistory, map[string]interface{}{
-				"value":          diff.Get("value"),
-				"major_value":    diff.Get("major_value").(int),
-				"minor_value":    diff.Get("minor_value").(int),
-				"patch_value":    diff.Get("patch_value").(int),
-				"major_triggers": major_triggers,
-				"minor_triggers": minor_triggers,
-				"patch_triggers": patch_triggers,
-			}, diff.Get("max_history").(int)))
-		}
+		curHistory := diff.Get("history").([]interface{})
+		diff.SetNew("history", appendAndTruncate(curHistory, map[string]interface{}{
+			"value":          diff.Get("value"),
+			"major_value":    diff.Get("major_value").(int),
+			"minor_value":    diff.Get("minor_value").(int),
+			"patch_value":    diff.Get("patch_value").(int),
+			"major_triggers": major_triggers,
+			"minor_triggers": minor_triggers,
+			"patch_triggers": patch_triggers,
+		}, diff.Get("max_history").(int)))
 
 	} else if diff.HasChange("patch_triggers") {
 		curMajor := diff.Get("major_value").(int)
@@ -232,18 +215,16 @@ func semanticVersionDiff(context context.Context, diff *schema.ResourceDiff, som
 		newVersion := fmt.Sprintf("%d.%d.%d", curMajor, curMinor, newPatch)
 		diff.SetNew("value", newVersion)
 
-		if diff.Get("capture_history") == true {
-			curHistory := diff.Get("history").([]interface{})
-			diff.SetNew("history", appendAndTruncate(curHistory, map[string]interface{}{
-				"value":          diff.Get("value"),
-				"major_value":    diff.Get("major_value").(int),
-				"minor_value":    diff.Get("minor_value").(int),
-				"patch_value":    diff.Get("patch_value").(int),
-				"major_triggers": major_triggers,
-				"minor_triggers": minor_triggers,
-				"patch_triggers": patch_triggers,
-			}, diff.Get("max_history").(int)))
-		}
+		curHistory := diff.Get("history").([]interface{})
+		diff.SetNew("history", appendAndTruncate(curHistory, map[string]interface{}{
+			"value":          diff.Get("value"),
+			"major_value":    diff.Get("major_value").(int),
+			"minor_value":    diff.Get("minor_value").(int),
+			"patch_value":    diff.Get("patch_value").(int),
+			"major_triggers": major_triggers,
+			"minor_triggers": minor_triggers,
+			"patch_triggers": patch_triggers,
+		}, diff.Get("max_history").(int)))
 
 	}
 

@@ -17,9 +17,11 @@ A semantic version number whose components increment according to the configured
 
 ### Optional
 
+- **capture_history** (Boolean) Should this resource instance capture the history of the trigger values over time?
 - **id** (String) The ID of this resource.
 - **major_initial_value** (Number) The initial major version value.
 - **major_triggers** (Map of String) A map of strings that will cause the major version number to increment when any of the values change.
+- **max_history** (Number) How many versions (max) should this resource store?
 - **minor_initial_value** (Number) The initial minor version value.
 - **minor_triggers** (Map of String) A map of strings that will cause the minor version number to increment when any of the values change.
 - **patch_initial_value** (Number) The initial patch version value.
@@ -27,10 +29,23 @@ A semantic version number whose components increment according to the configured
 
 ### Read-Only
 
-- **history** (List of String) A list of semantic versions that this resource has produced.
+- **history** (List of Object) A list of semantic versions that this resource has produced. (see [below for nested schema](#nestedatt--history))
 - **major_value** (Number) The current major version number.
 - **minor_value** (Number) The current minor version number.
 - **patch_value** (Number) The current patch version number.
 - **value** (String) The semantic version number as a string in <major>.<minor>.<patch> form.
+
+<a id="nestedatt--history"></a>
+### Nested Schema for `history`
+
+Read-Only:
+
+- **major_triggers** (Map of String)
+- **major_value** (Number)
+- **minor_triggers** (Map of String)
+- **minor_value** (Number)
+- **patch_triggers** (Map of String)
+- **patch_value** (Number)
+- **value** (String)
 
 

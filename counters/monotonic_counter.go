@@ -2,17 +2,15 @@ package counters
 
 import (
 	"context"
-	"github.com/google/uuid"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func monotonicResource() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: createCounter,
-		ReadContext:   readCounter,
-		UpdateContext: updateCounter,
-		DeleteContext: deleteCounter,
+		CreateContext: genericCreate,
+		ReadContext:   genericRead,
+		UpdateContext: genericUpdate,
+		DeleteContext: genericDelete,
 		CustomizeDiff: customMonotonicDiff,
 		Description:   "A monotonic counter which increments according to the configured triggers.",
 		Schema: map[string]*schema.Schema{
@@ -29,10 +27,36 @@ func monotonicResource() *schema.Resource {
 				ForceNew:    true,
 				Description: "The amount used to increment / decrement the counter on each revision.",
 			},
+			"capture_history": {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Default:     true,
+				ForceNew:    true,
+				Description: "Should this resource instance capture the history of the trigger values over time?",
+			},
+			"max_history": {
+				Type:        schema.TypeInt,
+				Optional:    true,
+				Default:     1000,
+				ForceNew:    false,
+				Description: "How many versions (max) should this resource store?",
+			},
 			"history": {
 				Type: schema.TypeList,
-				Elem: &schema.Schema{
-					Type: schema.TypeInt,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"value": {
+							Type:     schema.TypeInt,
+							Computed: true,
+						},
+						"triggers": {
+							Type: schema.TypeMap,
+							Elem: &schema.Schema{
+								Type: schema.TypeString,
+							},
+							Computed: true,
+						},
+					},
 				},
 				Computed:    true,
 				Description: "A list of counter values that this resource has produced.",
@@ -56,36 +80,36 @@ func monotonicResource() *schema.Resource {
 }
 
 func customMonotonicDiff(context context.Context, diff *schema.ResourceDiff, something interface{}) error {
-	if diff.HasChange("triggers") {
+
+	_, exists := diff.GetOkExists("value")
+
+	if !exists {
+		start := diff.Get("initial_value")
+		diff.SetNew("value", start)
+
+		if diff.Get("capture_history") == true {
+			diff.SetNew("history", []map[string]interface{}{
+				{
+					"value":    start,
+					"triggers": diff.Get("triggers"),
+				},
+			})
+		} else {
+			diff.SetNew("history", []map[string]interface{}{})
+		}
+
+	} else if diff.HasChange("triggers") {
 		step := diff.Get("step").(int)
 		newValue := diff.Get("value").(int) + step
 		curHistory := diff.Get("history").([]interface{})
 		diff.SetNew("value", newValue)
-		diff.SetNew("history", append(curHistory, newValue))
+		if diff.Get("capture_history") == true {
+			diff.SetNew("history", appendAndTruncate(curHistory, map[string]interface{}{
+				"value":    newValue,
+				"triggers": diff.Get("triggers"),
+			}, diff.Get("max_history").(int)))
+		}
 	}
+
 	return nil
-}
-
-func createCounter(context context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	diagnostics := make(diag.Diagnostics, 0)
-	data.SetId(uuid.New().String())
-	start := data.Get("initial_value")
-	data.Set("value", start)
-	data.Set("history", []interface{}{start})
-	return diagnostics
-}
-
-func readCounter(context context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	diagnostics := make(diag.Diagnostics, 0)
-	return diagnostics
-}
-
-func updateCounter(context context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	diagnostics := make(diag.Diagnostics, 0)
-	return diagnostics
-}
-
-func deleteCounter(context context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	diagnostics := make(diag.Diagnostics, 0)
-	return diagnostics
 }
